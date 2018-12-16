@@ -651,5 +651,30 @@ namespace Apdex.Controllers
             return View();
         }
         
+        ApdexDBEntities dc = new ApdexDBEntities();
+        public ActionResult Chart()
+        {
+
+            return View();
+        }
+
+        public ActionResult GetData()
+        {
+            int human_resource = dc.profiles.Where(x => x.aod == "Human Resource").Count();
+            int cst = dc.profiles.Where(x => x.aod == "CST").Count();
+            int marketing = dc.profiles.Where(x => x.aod == "Marketing").Count();
+            Ratio obj = new Ratio();
+            obj.human_resource = human_resource;
+            obj.cst = cst;
+            obj.marketing = marketing;
+            return Json(obj, JsonRequestBehavior.AllowGet);
+        }
+
+        public class Ratio
+        {
+            public int human_resource { get; set; }
+            public int cst { get; set; }
+            public int marketing { get; set; }
+        }
     }
 }
