@@ -1,0 +1,156 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Homepage</title>
+    <link rel="icon" type="image/png" href="images/icons/favicon.ico" />
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="~/Content/themes/base/bootstrap.min.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="~/Content/themes/base/font-awesome.min.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="~/Content/themes/base/icon-font.min.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="~/Content/themes/base/animate.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="~/Content/themes/base/hamburgers.min.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="~/Content/themes/base/animsition.min.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="~/Content/themes/base/select2.min.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="~/Content/themes/base/daterangepicker.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="~/Content/themes/base/util.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="~/Content/themes/base/main.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css" />
+    <link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+    <script src="~/Scripts/bootstrap.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css" />
+    <link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+</head>
+<body>
+    <div style="width:90%; margin:0 auto">
+        <a class="popup btn btn-primary" href="/admin/save/0" style="margin-bottom:20px; margin-top:20px;">Add New Employee</a>
+        <table id="myDatatable">
+            <thead>
+                <tr>
+                    <th style="text-align:center">COMPANY</th>
+                    <th style="text-align:center">NAMA</th>
+                    <th style="text-align:center">JABATAN</th>
+                    <th style="text-align:center">TANGGAL LAHIR</th>
+                    <th style="text-align:center">USIA</th>
+                    <th style="text-align:center">TANGGAL MASUK</th>
+                    <th style="text-align:center">MASA KERJA (THN)</th>
+                    <th style="text-align:center">GOL</th>
+                    <th style="text-align:center">TANGGAL GOL</th>
+                    <th style="text-align:center">EDIT</th>
+                    <th style="text-align:center">DELETE</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    <script src="~/Scripts/jquery-3.3.1.min.js"></script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            var oTable = $('#myDatatable').dataTable({
+                "ajax": {
+                    "url": '/admin/GetMember',
+                    "type": "get",
+                    "datatype": "json"
+                },
+                "columns": [
+                    { "data": "company", "autoWidth": true },
+                    { "data": "nama", "autoWidth": true },
+                    { "data": "jabatan", "autoWidth": true },
+                    { "data": "tgl_lahir", "autoWidth": true },
+                    { "data": "usia", "autoWidth": true },
+                    { "data": "tgl_masuk", "autoWidth": true },
+                    { "data": "masa_kerja", "autoWidth": true },
+                    { "data": "gol", "autoWidth": true },
+                    { "data": "tgl_gol", "autoWidth": true },
+                    {
+                        "data": "member_id", "width": "50px", "render": function (data) {
+                            return '<a class="popup" href="/Admin/save/' + data + '">Edit</a>';
+                        }
+                    },
+                    {
+                        "data": "member_id", "width": "50px", "render": function (data) {
+                            return '<a class="popup" href="/Admin/delete/' + data + '">Delete</a>';
+                        }
+                    }
+                ]
+            })
+
+            $('.tablecontainer').on('click', 'a.popup', function (e) {
+
+                e.preventDefault();
+                OpenPopup($(this).attr('href'));
+
+            })
+
+            function OpenPopup(pageUrl) {
+                var $pageContent = $('<div/>');
+                $pageContent.load(pageUrl, function () {
+
+                    $('#popupForm', $pageContent).removeData('validator');
+                    $('#popupForm', $pageContent).removeData('unobtrusiveValidation');
+                    $.validator.unobtrusive.parse('form');
+
+
+                });
+
+                $dialog = $('<div class="popupWindow" style="overflow:auto"></div>')
+                    .html($pageContent)
+                    .dialog({
+                        draggable: false,
+                        autoOpen: false,
+                        resizable: false,
+                        model: true,
+                        title: 'Popup Dialog',
+                        height: 550,
+                        width: 600,
+                        close: function () {
+                            $dialog.dialog('destroy').remove();
+                        }
+                    })
+
+                $('.popupWindow').on('submit', '#popupForm', function (e) {
+
+                    var url = $('#popupForm')[0].action;
+                    $.ajax({
+                        type: "POST",
+                        url: url,
+                        data: $('#popupForm').serialize(),
+                        success: function (data) {
+                            if (data.status) {
+                                $dialog.dialog('close');
+                                oTable.ajax.reload();
+                            }
+                        }
+                    })
+
+                    e.preventDefault();
+
+                })
+
+                $dialog.dialog('open');
+            }
+        })//ini benar
+    </script>
+</body>
+</html>
